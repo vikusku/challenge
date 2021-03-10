@@ -21,7 +21,7 @@ public class ProductController {
         return ResponseEntity.ok(Lists.newArrayList());
     }
 
-    @PostMapping(name = "crate_product", consumes = "application/json")
+    @PostMapping(name = "create_product", consumes = "application/json")
     public ResponseEntity<ProductResource> create(final ProductResource productResource) {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
