@@ -1,7 +1,8 @@
 package com.compensate.api.challenge.controller;
 
 import com.compensate.api.challenge.resource.ProductResource;
-import com.google.common.collect.Lists;
+import com.compensate.api.challenge.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -14,11 +15,14 @@ import java.util.UUID;
 @RequestMapping(path = "/api/products", produces = "application/json")
 public class ProductController {
 
+    @Autowired
+    private ProductService productService;
+
     @GetMapping(name = "get_all_products")
     public ResponseEntity<List<ProductResource>> getAll(
             @RequestParam(defaultValue = "0") Integer pageNo,
             @RequestParam(defaultValue = "5") Integer pageSize) {
-        return ResponseEntity.ok(Lists.newArrayList());
+        return ResponseEntity.ok(productService.getAll(pageNo, pageSize));
     }
 
     @PostMapping(name = "create_product", consumes = "application/json")
@@ -31,14 +35,17 @@ public class ProductController {
         return ResponseEntity.created(uri).body(new ProductResource());
     }
 
-
-    @PutMapping(name = "update_product", path = "{/id}", consumes = "application/json")
-    public ResponseEntity<ProductResource> update(final ProductResource productResource) {
-        return ResponseEntity.ok(new ProductResource());
+    @PutMapping(path = "/{id}", name = "update_product", consumes = "application/json")
+    public ResponseEntity<ProductResource> update(@PathVariable UUID id, final ProductResource productResource) {
+        return productService.update(id, productResource)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping(name = "get_product_by_id", path = "{/id}")
+    @GetMapping(path = "/{id}", name = "get_product_by_id")
     public ResponseEntity<ProductResource> get(final UUID id) {
-        return ResponseEntity.ok(new ProductResource());
+        return productService.get(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
