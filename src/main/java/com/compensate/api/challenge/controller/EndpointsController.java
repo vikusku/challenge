@@ -1,7 +1,9 @@
 package com.compensate.api.challenge.controller;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ public class EndpointsController {
 
     @GetMapping(name = "api_entry_point")
     public ResponseEntity<String> getEndpoints(HttpServletRequest req) {
+        final ObjectMapper mapper = new ObjectMapper();
 
         List<String> endpoints = requestMappingHandlerMapping
                 .getHandlerMethods()
@@ -37,6 +40,10 @@ public class EndpointsController {
                 })
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new Gson().toJson(endpoints));
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(endpoints));
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
