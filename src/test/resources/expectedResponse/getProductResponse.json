@@ -1,0 +1,33 @@
+{
+  "_type":"product",
+  "id":"d56b4377-e906-4c63-955c-70dbb1d919b2",
+  "name":"TestProduct",
+  "properties":{
+    "prop1":"some value",
+    "prop2":12.3,
+    "prop3":1300399023,
+    "prop4":false,
+    "prop5":[
+      "one",
+      "two",
+      "three"
+    ],
+    "prop6":{
+      "subProp1":"some value",
+      "subProp2":12.3,
+      "subProp3":false,
+      "subProp4":[
+        "one",
+        "two",
+        "three"
+      ]
+    }
+  },
+  "created_at":"2020-04-29T12:50:08",
+  "modified_at":"2020-04-29T12:50:08",
+  "_links":{
+    "self":{
+      "href":"http://localhost/api/v1/products/d56b4377-e906-4c63-955c-70dbb1d919b2"
+    }
+  }
+}
