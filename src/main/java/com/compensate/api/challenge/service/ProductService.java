@@ -1,6 +1,7 @@
 package com.compensate.api.challenge.service;
 
 import com.compensate.api.challenge.model.ProductEntity;
+import com.compensate.api.challenge.request.ProductRequest;
 import com.compensate.api.challenge.resource.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +17,8 @@ public class ProductService {
         return Page.empty();
     }
 
-    public Product create(final Product productDTO) {
-        return new Product("tmp");
+    public ProductEntity create(final ProductRequest productRequest) {
+        return new ProductEntity();
     }
 
     public Optional<Product> update(final UUID id, final Product productDTO) {

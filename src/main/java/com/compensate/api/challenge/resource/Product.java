@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+// TODO Use OffsetDateTime instead LocalDateTime
 @Getter
 @JsonPropertyOrder({"_type", "id", "name", "properties", "created_at", "modified_at" })
 public class Product extends RepresentationModel<Product> {

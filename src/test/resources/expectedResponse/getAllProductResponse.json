@@ -6,15 +6,15 @@
         "id":"257a3e82-59c9-47c9-880a-74a1bbef8a07",
         "name":"TestProduct1",
         "properties":{
-          "prop2":12.3,
           "prop1":"prop1 value",
+          "prop2":12.3,
+          "prop3":false,
           "prop4":[
             "one",
             "two",
             "three",
             "four"
-          ],
-          "prop3":false
+          ]
         },
         "created_at":"2020-04-29T12:50:08",
         "modified_at":"2020-04-29T12:50:08"

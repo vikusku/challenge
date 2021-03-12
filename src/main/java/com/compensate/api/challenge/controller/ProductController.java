@@ -2,6 +2,7 @@ package com.compensate.api.challenge.controller;
 
 import com.compensate.api.challenge.ProductAssembler;
 import com.compensate.api.challenge.model.ProductEntity;
+import com.compensate.api.challenge.request.ProductRequest;
 import com.compensate.api.challenge.resource.Product;
 import com.compensate.api.challenge.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +17,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
-@RequestMapping(path = "/api/v1/products", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
+@RequestMapping(path = "/api/v1/products", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 public class ProductController {
 
     @Autowired
@@ -42,13 +45,17 @@ public class ProductController {
     }
 
     @PostMapping(name = "create_product", consumes = "application/json")
-    public ResponseEntity<Product> create(@RequestBody Product product) {
+    public ResponseEntity<Product> create(@Valid @NotNull @RequestBody ProductRequest productRequest) {
+        final Product product = productAssembler.toModel(productService.create(productRequest));
+        Link selfLink = linkTo(ProductController.class).slash(product.getId()).withSelfRel();
+        product.add(selfLink);
+
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(UUID.randomUUID())
+                .buildAndExpand(product.getId())
                 .toUri();
 
-        return ResponseEntity.created(uri).body(productService.create(product));
+        return ResponseEntity.created(uri).body(product);
     }
 
     @PutMapping(path = "/{id}", name = "update_product", consumes = "application/json")
