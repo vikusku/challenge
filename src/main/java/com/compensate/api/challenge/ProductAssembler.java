@@ -3,7 +3,6 @@ package com.compensate.api.challenge;
 import com.compensate.api.challenge.controller.ProductController;
 import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.resource.Product;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +22,9 @@ public class ProductAssembler extends RepresentationModelAssemblerSupport<Produc
                 entity.getName(),
                 entity.getProperties(),
                 entity.getCreatedAt(),
-                entity.getModifiedAt()
+                entity.getModifiedAt(),
+                linkTo(ProductController.class).slash(entity.getId()).withSelfRel()
         );
-
-        Link selfLink = linkTo(ProductController.class).slash(product.getId()).withSelfRel();
-        product.add(selfLink);
 
         return product;
     }

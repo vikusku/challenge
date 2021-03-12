@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,22 +25,20 @@ public class Product extends RepresentationModel<Product> {
     @JsonProperty("modified_at")
     private LocalDateTime modifiedAt;
 
-    public Product(UUID id, String name, Map<String, Object> properties, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+    public Product(
+            UUID id,
+            String name,
+            Map<String, Object> properties,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            Link link) {
         this.type = this.getClass().getSimpleName().toLowerCase();
         this.id = id;
         this.name = name;
         this.properties = properties;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
-    }
-
-    public Product(String name) {
-        this.type = this.getClass().getSimpleName().toLowerCase();
-        this.id = UUID.randomUUID();
-        this.name = name;
-        this.properties = new LinkedHashMap<>();
-        this.createdAt = LocalDateTime.now();
-        this.modifiedAt = LocalDateTime.now();
+        this.add(link);
     }
 
     public void setId(UUID id) {

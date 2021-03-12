@@ -6,18 +6,33 @@
         "id":"257a3e82-59c9-47c9-880a-74a1bbef8a07",
         "name":"TestProduct1",
         "properties":{
-          "prop1":"prop1 value",
+          "prop1":"some value",
           "prop2":12.3,
-          "prop3":false,
-          "prop4":[
+          "prop3":1300399023,
+          "prop4":false,
+          "prop5":[
             "one",
             "two",
-            "three",
-            "four"
-          ]
+            "three"
+          ],
+          "prop6":{
+            "subProp1":"some value",
+            "subProp2":12.3,
+            "subProp3":false,
+            "subProp4":[
+              "one",
+              "two",
+              "three"
+            ]
+          }
         },
         "created_at":"2020-04-29T12:50:08",
-        "modified_at":"2020-05-29T12:50:08"
+        "modified_at":"2020-05-29T12:50:08",
+        "_links":{
+          "self":{
+            "href":"http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07"
+          }
+        }
       },
       {
         "_type":"product",
@@ -27,7 +42,12 @@
 
         },
         "created_at":"2020-04-29T12:50:08",
-        "modified_at":"2020-05-29T12:50:08"
+        "modified_at":"2020-05-29T12:50:08",
+        "_links":{
+          "self":{
+            "href":"http://localhost/api/v1/products/3877ed4b-e2cb-4097-8c58-a8001c44096a"
+          }
+        }
       },
       {
         "_type":"product",
@@ -37,7 +57,12 @@
 
         },
         "created_at":"2020-04-29T12:50:08",
-        "modified_at":"2020-05-29T12:50:08"
+        "modified_at":"2020-05-29T12:50:08",
+        "_links":{
+          "self":{
+            "href":"http://localhost/api/v1/products/7a23ac61-178d-4f28-9b63-d977c629176d"
+          }
+        }
       },
       {
         "_type":"product",
@@ -49,7 +74,12 @@
           }
         },
         "created_at":"2020-04-29T12:50:08",
-        "modified_at":"2020-05-29T12:50:08"
+        "modified_at":"2020-05-29T12:50:08",
+        "_links":{
+          "self":{
+            "href":"http://localhost/api/v1/products/60ed9741-3c8a-4b9a-adf9-3c821ca2393a"
+          }
+        }
       }
     ]
   },

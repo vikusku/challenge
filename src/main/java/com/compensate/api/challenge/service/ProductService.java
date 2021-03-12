@@ -25,9 +25,8 @@ public class ProductService {
         return Optional.of(new ProductEntity());
     }
 
-    // TODO return productEntity
-    public Optional<Product> get(final UUID uuid) {
-        return Optional.of(new Product("tmp"));
+    public Optional<ProductEntity> get(final UUID uuid) {
+        return Optional.of(new ProductEntity());
     }
 
 }
