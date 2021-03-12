@@ -1,4 +1,4 @@
-package com.compensate.api.challenge;
+package com.compensate.api.challenge.assembler;
 
 import com.compensate.api.challenge.controller.ProductController;
 import com.compensate.api.challenge.model.ProductEntity;

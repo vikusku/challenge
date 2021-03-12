@@ -1,6 +1,6 @@
 package com.compensate.api.challenge.controller;
 
-import com.compensate.api.challenge.ProductAssembler;
+import com.compensate.api.challenge.assembler.ProductAssembler;
 import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.request.ProductRequest;
 import com.compensate.api.challenge.resource.Product;
