@@ -1,31 +1,44 @@
 package com.compensate.api.challenge.controller;
 
+import com.compensate.api.challenge.ProductAssembler;
+import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.resource.Product;
 import com.compensate.api.challenge.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
-@RequestMapping(path = "/api/v1/products", produces = "application/json")
+@RequestMapping(path = "/api/v1/products", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
 public class ProductController {
 
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private ProductAssembler productAssembler;
+
+    @Autowired
+    private PagedResourcesAssembler<ProductEntity> pagedResourcesAssembler;
+
     @GetMapping(name = "get_all_products")
-    public ResponseEntity<List<Product>> getAll(
-            @RequestParam(defaultValue = "0") Integer pageNo,
-            @RequestParam(defaultValue = "5") Integer pageSize) {
-        return ResponseEntity.ok(productService.getAll(pageNo, pageSize));
+    public ResponseEntity<PagedModel<Product>> getAll(@PageableDefault Pageable pageRequest) {
+        return ResponseEntity.ok(
+                pagedResourcesAssembler.toModel(
+                        productService.getAll(pageRequest), productAssembler));
     }
 
     @PostMapping(name = "create_product", consumes = "application/json")

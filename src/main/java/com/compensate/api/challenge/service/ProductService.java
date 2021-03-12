@@ -1,18 +1,19 @@
 package com.compensate.api.challenge.service;
 
+import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.resource.Product;
-import com.google.common.collect.Lists;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class ProductService {
 
-    public List<Product> getAll(Integer pageNo, Integer pageSize) {
-        return Lists.newArrayList();
+    public Page<ProductEntity> getAll(Pageable pageRequest) {
+        return Page.empty();
     }
 
     public Product create(final Product productDTO) {
