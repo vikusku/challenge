@@ -8,6 +8,7 @@ import com.compensate.api.challenge.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.tomcat.jni.Local;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,9 +28,9 @@ import java.util.*;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -47,7 +48,7 @@ class ProductControllerTest {
 
     final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
     final String createdAt = "2020-04-29T12:50:08+00:00";
-    final String modifiedAt = "2020-04-29T12:50:08+00:00";
+    final String modifiedAt = "2020-05-29T12:50:08+00:00";
 
     @Test
     public void getShouldReturnProductResourceForExistingProduct() throws Exception {
@@ -78,6 +79,7 @@ class ProductControllerTest {
                 .perform(get("/api/v1/products/" + id).accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(content().json(readFromFile("getProductResponse.json")));
     }
 
@@ -111,6 +113,7 @@ class ProductControllerTest {
                 .perform(get("/api/v1/products?page=2&size=4").accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(content().json(readFromFile("getAllProductResponse.json")));
     }
 
@@ -126,7 +129,7 @@ class ProductControllerTest {
                 "TestProduct",
                 properties,
                 LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         );
         when(productService.create(any(ProductRequest.class))).thenReturn(productEntity);
         when(productAssembler.toModel(productEntity)).thenReturn(new Product(
@@ -146,6 +149,45 @@ class ProductControllerTest {
                 .andExpect(header().string("Location", equalTo("http://localhost/api/v1/products/" + id)))
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(content().json(readFromFile("createProductResponse.json")));
+    }
+
+    @Test
+    public void updateShouldSaveAndUpdateExistingProduct() throws Exception {
+        final ProductEntity productEntity = new ProductEntity(
+                id,
+                "TestProduct renamed",
+                Maps.newLinkedHashMap(),
+                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        );
+        when(productService.update(eq(id), any(ProductRequest.class))).thenReturn(Optional.of(productEntity));
+        when(productAssembler.toModel(productEntity)).thenReturn(new Product(
+                productEntity.getId(),
+                productEntity.getName(),
+                productEntity.getProperties(),
+                productEntity.getCreatedAt(),
+                productEntity.getModifiedAt()
+        ));
+
+        this.mockMvc
+                .perform(put("/api/v1/products/" + id)
+                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap())))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
+                .andExpect(content().json(readFromFile("updateProductResponse.json")));
+    }
+
+    @Test
+    public void updateShouldReturn404IfProductDoesNotExist() throws Exception {
+        when(productService.update(eq(id), any(ProductRequest.class))).thenReturn(Optional.empty());
+
+        this.mockMvc
+                .perform(put("/api/v1/products/" + id)
+                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap())))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     private String readFromFile(String fileName) throws Exception {

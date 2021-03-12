@@ -38,14 +38,14 @@ public class ProductController {
     private PagedResourcesAssembler<ProductEntity> pagedResourcesAssembler;
 
     @GetMapping(name = "get_all_products")
-    public ResponseEntity<PagedModel<Product>> getAll(@PageableDefault Pageable pageRequest) {
+    public ResponseEntity<PagedModel<Product>> getAll(@PageableDefault final Pageable pageRequest) {
         return ResponseEntity.ok(
                 pagedResourcesAssembler.toModel(
                         productService.getAll(pageRequest), productAssembler));
     }
 
     @PostMapping(name = "create_product", consumes = "application/json")
-    public ResponseEntity<Product> create(@Valid @NotNull @RequestBody ProductRequest productRequest) {
+    public ResponseEntity<Product> create(@Valid @NotNull @RequestBody final ProductRequest productRequest) {
         final Product product = productAssembler.toModel(productService.create(productRequest));
         Link selfLink = linkTo(ProductController.class).slash(product.getId()).withSelfRel();
         product.add(selfLink);
@@ -59,10 +59,16 @@ public class ProductController {
     }
 
     @PutMapping(path = "/{id}", name = "update_product", consumes = "application/json")
-    public ResponseEntity<Product> update(@PathVariable UUID id, @RequestBody Product product) {
-        return productService.update(id, product)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<Product> update(@PathVariable final UUID id, @Valid @NotNull @RequestBody final ProductRequest productRequest) {
+        return productService.update(id, productRequest).map(entity -> {
+
+            final Product product = productAssembler.toModel(entity);
+            Link selfLink = linkTo(ProductController.class).slash(product.getId()).withSelfRel();
+            product.add(selfLink);
+
+            return ResponseEntity.ok(product);
+        })
+        .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping(path = "/{id}", name = "get_product_by_id")

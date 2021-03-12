@@ -21,10 +21,11 @@ public class ProductService {
         return new ProductEntity();
     }
 
-    public Optional<Product> update(final UUID id, final Product productDTO) {
-        return Optional.of(new Product("tmp"));
+    public Optional<ProductEntity> update(final UUID id, final ProductRequest productRequest) {
+        return Optional.of(new ProductEntity());
     }
 
+    // TODO return productEntity
     public Optional<Product> get(final UUID uuid) {
         return Optional.of(new Product("tmp"));
     }
