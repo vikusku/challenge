@@ -33,6 +33,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// TODO test that request body is validated
+// TODO test UpdateProductException
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
 
