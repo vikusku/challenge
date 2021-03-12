@@ -22,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -46,12 +45,12 @@ class ProductControllerTest {
     @MockBean
     private ProductAssembler productAssembler;
 
-    final String createdAt = "2020-04-29T12:50:08+00:00";
-    final String modifiedAt = "2020-05-29T12:50:08+00:00";
-
     @Test
     public void getShouldReturnProductResourceForExistingProduct() throws Exception {
         final UUID id = UUID.fromString("257a3e82-59c9-47c9-880a-74a1bbef8a07");
+        final String createdAt = "2020-04-29T12:50:08+00:00";
+        final String modifiedAt = "2020-05-29T12:50:08+00:00";
+
         final Map<String, Object> supPropertiesMap = new LinkedHashMap<>();
         supPropertiesMap.put("subProp1", "some value");
         supPropertiesMap.put("subProp2", 12.3);
@@ -70,8 +69,8 @@ class ProductControllerTest {
                 id,
                 "Test Product",
                 properties,
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt)
         );
         final Product product = new Product(
                 entity.getId(),
@@ -131,6 +130,8 @@ class ProductControllerTest {
     @Test
     public void createShouldSaveAndReturnNewProduct() throws Exception {
         final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        final String createdAt = "2020-04-29T12:50:08+02:00";
+
         final Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("prop1", "prop1 val");
         properties.put("prop2", false);
@@ -140,8 +141,8 @@ class ProductControllerTest {
                 id,
                 "TestProduct",
                 properties,
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(createdAt)
         );
         when(productService.create(any(ProductRequest.class))).thenReturn(productEntity);
 
@@ -171,12 +172,15 @@ class ProductControllerTest {
     @Test
     public void updateShouldSaveAndUpdateExistingProduct() throws Exception {
         final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        final String createdAt = "2020-04-29T12:50:08+03:00";
+        final String modifiedAt = "2020-05-29T12:50:08+03:00";
+
         final ProductEntity productEntity = new ProductEntity(
                 id,
                 "TestProduct renamed",
                 Maps.newLinkedHashMap(),
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt)
         );
         when(productService.update(eq(id), any(ProductRequest.class))).thenReturn(Optional.of(productEntity));
 
@@ -230,6 +234,9 @@ class ProductControllerTest {
     }
 
     private Map<ProductEntity, Product> getAllRequestMockedProducts() {
+        final String createdAt = "2020-04-29T12:50:08+00:00";
+        final String modifiedAt = "2020-05-29T12:50:08+00:00";
+
         final Map<ProductEntity, Product> products = new LinkedHashMap<>();
 
         final Map<String, Object> supPropertiesMap = new LinkedHashMap<>();
@@ -251,14 +258,14 @@ class ProductControllerTest {
                 UUID.fromString("257a3e82-59c9-47c9-880a-74a1bbef8a07"),
                 "TestProduct1",
                 properties1,
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)),
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt)),
             new Product(
                 UUID.fromString("257a3e82-59c9-47c9-880a-74a1bbef8a07"),
                 "TestProduct1",
                 properties1,
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
                 Link.of("http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07")));
 
         products.put(
@@ -266,15 +273,15 @@ class ProductControllerTest {
                 UUID.fromString("3877ed4b-e2cb-4097-8c58-a8001c44096a"),
                 "TestProduct2",
                 Maps.newLinkedHashMap(),
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt)
             ),
             new Product(
                 UUID.fromString("3877ed4b-e2cb-4097-8c58-a8001c44096a"),
                 "TestProduct2",
                 Maps.newLinkedHashMap(),
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
                 Link.of("http://localhost/api/v1/products/3877ed4b-e2cb-4097-8c58-a8001c44096a")));
 
         products.put(
@@ -282,15 +289,15 @@ class ProductControllerTest {
                 UUID.fromString("7a23ac61-178d-4f28-9b63-d977c629176d"),
                 "TestProduct3",
                 Maps.newLinkedHashMap(),
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt)
             ),
             new Product(
                 UUID.fromString("7a23ac61-178d-4f28-9b63-d977c629176d"),
                 "TestProduct3",
                 Maps.newLinkedHashMap(),
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
                 Link.of("http://localhost/api/v1/products/7a23ac61-178d-4f28-9b63-d977c629176d")));
 
         final Map<String, Object> properties4 = new LinkedHashMap<>();
@@ -304,15 +311,15 @@ class ProductControllerTest {
                 UUID.fromString("60ed9741-3c8a-4b9a-adf9-3c821ca2393a"),
                 "TestProduct4",
                 properties4,
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt)
             ),
             new Product(
                 UUID.fromString("60ed9741-3c8a-4b9a-adf9-3c821ca2393a"),
                 "TestProduct4",
                 properties4,
-                LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                LocalDateTime.parse(modifiedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
                 Link.of("http://localhost/api/v1/products/60ed9741-3c8a-4b9a-adf9-3c821ca2393a")));
 
         return products;

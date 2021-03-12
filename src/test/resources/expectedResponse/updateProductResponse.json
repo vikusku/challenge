@@ -3,8 +3,8 @@
   "id":"d56b4377-e906-4c63-955c-70dbb1d919b2",
   "name":"TestProduct renamed",
   "properties":{},
-  "created_at":"2020-04-29T12:50:08",
-  "modified_at":"2020-05-29T12:50:08",
+  "created_at":"2020-04-29T12:50:08+03:00",
+  "modified_at":"2020-05-29T12:50:08+03:00",
   "_links":{
     "self":{
       "href":"http://localhost/api/v1/products/d56b4377-e906-4c63-955c-70dbb1d919b2"
