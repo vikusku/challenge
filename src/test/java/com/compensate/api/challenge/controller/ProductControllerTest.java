@@ -1,6 +1,7 @@
 package com.compensate.api.challenge.controller;
 
 import com.compensate.api.challenge.assembler.ProductAssembler;
+import com.compensate.api.challenge.exception.UpdateProductException;
 import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.request.ProductRequest;
 import com.compensate.api.challenge.resource.Product;
@@ -26,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -33,8 +35,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// TODO test that request body is validated
-// TODO test UpdateProductException
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
 
@@ -172,6 +172,18 @@ class ProductControllerTest {
     }
 
     @Test
+    public void createShouldReturn400IfNameIsMissing() throws Exception {
+        this.mockMvc
+                .perform(post("/api/v1/products")
+                        .accept(MediaTypes.HAL_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(new ProductRequest(null, null))))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("name cannot be null or empty")));
+    }
+
+    @Test
     public void updateShouldSaveAndUpdateExistingProduct() throws Exception {
         final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
         final String createdAt = "2020-04-29T12:50:08+03:00";
@@ -219,6 +231,20 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void updateProductExceptionTransformedIntoInternalServerError() throws Exception{
+        final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        when(productService.update(eq(id), any(ProductRequest.class))).thenThrow(UpdateProductException.class);
+
+        this.mockMvc
+                .perform(put("/api/v1/products/" + id)
+                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap())))
+                        .accept(MediaTypes.HAL_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
     }
 
     private String readFromFile(String fileName) throws Exception {

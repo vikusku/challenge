@@ -11,7 +11,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductRequest {
-    @NotEmpty(message = "Name cannot be null")
+    @NotEmpty(message = "name cannot be null or empty")
     private String name;
     private Map<String, Object> properties;
 }
