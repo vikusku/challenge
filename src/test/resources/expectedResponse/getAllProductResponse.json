@@ -1,6 +1,6 @@
 {
   "_embedded":{
-    "productList":[
+    "products":[
       {
         "_type":"product",
         "id":"257a3e82-59c9-47c9-880a-74a1bbef8a07",

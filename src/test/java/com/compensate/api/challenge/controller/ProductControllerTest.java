@@ -49,7 +49,7 @@ class ProductControllerTest {
 
     @Test
     public void getShouldReturnProductResourceForExistingProduct() throws Exception {
-        final UUID id = UUID.fromString("257a3e82-59c9-47c9-880a-74a1bbef8a07");
+        final String id = "257a3e82-59c9-47c9-880a-74a1bbef8a07";
         final String createdAt = "2020-04-29T12:50:08+00:00";
         final String modifiedAt = "2020-05-29T12:50:08+00:00";
 
@@ -68,7 +68,7 @@ class ProductControllerTest {
         properties.put("prop6", supPropertiesMap);
 
         final ProductEntity entity = new ProductEntity(
-                id,
+                UUID.fromString(id),
                 "Test Product",
                 properties,
                 OffsetDateTime.parse(createdAt),
@@ -83,7 +83,7 @@ class ProductControllerTest {
                 Link.of("http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07")
         );
 
-        when(productService.get(id)).thenReturn(Optional.of(entity));
+        when(productService.get(UUID.fromString(id))).thenReturn(Optional.of(entity));
         when(productAssembler.toModel(entity)).thenReturn(product);
 
         this.mockMvc
@@ -96,13 +96,23 @@ class ProductControllerTest {
 
     @Test
     public void getShouldReturn404IfProductDoesNotExist() throws Exception {
-        final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
-        when(productService.get(id)).thenReturn(Optional.empty());
+        final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
+        when(productService.get(UUID.fromString(id))).thenReturn(Optional.empty());
 
         this.mockMvc
                 .perform(get("/api/v1/products/" + id).accept(MediaTypes.HAL_JSON_VALUE))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getShouldReturn400IfIdIsInvalid() throws Exception {
+        final String id = "invalid-uuid";
+
+        this.mockMvc
+                .perform(get("/api/v1/products/" + id).accept(MediaTypes.HAL_JSON_VALUE))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -185,18 +195,18 @@ class ProductControllerTest {
 
     @Test
     public void updateShouldSaveAndUpdateExistingProduct() throws Exception {
-        final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
         final String createdAt = "2020-04-29T12:50:08+03:00";
         final String modifiedAt = "2020-05-29T12:50:08+03:00";
 
         final ProductEntity productEntity = new ProductEntity(
-                id,
+                UUID.fromString(id),
                 "TestProduct renamed",
                 Maps.newLinkedHashMap(),
                 OffsetDateTime.parse(createdAt),
                 OffsetDateTime.parse(modifiedAt)
         );
-        when(productService.update(eq(id), any(ProductRequest.class))).thenReturn(Optional.of(productEntity));
+        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenReturn(Optional.of(productEntity));
 
         final Product product = new Product(
                 productEntity.getId(),
@@ -221,8 +231,8 @@ class ProductControllerTest {
 
     @Test
     public void updateShouldReturn404IfProductDoesNotExist() throws Exception {
-        final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
-        when(productService.update(eq(id), any(ProductRequest.class))).thenReturn(Optional.empty());
+        final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
+        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenReturn(Optional.empty());
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
@@ -235,8 +245,8 @@ class ProductControllerTest {
 
     @Test
     public void updateProductExceptionTransformedIntoInternalServerError() throws Exception{
-        final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
-        when(productService.update(eq(id), any(ProductRequest.class))).thenThrow(UpdateProductException.class);
+        final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
+        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenThrow(UpdateProductException.class);
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
