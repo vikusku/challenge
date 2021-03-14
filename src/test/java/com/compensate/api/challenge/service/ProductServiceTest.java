@@ -56,6 +56,13 @@ class ProductServiceTest {
     }
 
     @Test
+    public void getShouldThrowInvalidIdExceptionIfIdIsInvalid() {
+        assertThrows(InvalidIdException.class, () -> {
+            productService.get("invalid-id");
+        });
+    }
+
+    @Test
     public void createSavesProductEntity() {
         final ProductRequest productRequest = new ProductRequest("Test", Maps.newLinkedHashMap(), null);
 
@@ -71,10 +78,10 @@ class ProductServiceTest {
     @Test
     public void updateSavesUpdatedProductEntity() {
         final ProductRequest productRequest = new ProductRequest("Test upd", Maps.newLinkedHashMap(), null);
-        final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
 
         productService.update(id, productRequest);
-        verify(productDao, times(1)).updateById(eq(id), productEntityArgumentCaptor.capture());
+        verify(productDao, times(1)).updateById(eq(UUID.fromString(id)), productEntityArgumentCaptor.capture());
 
         final ProductEntity actualProductEntity = productEntityArgumentCaptor.getValue();
         assertThat(actualProductEntity.getName()).isEqualTo("Test upd");
@@ -87,7 +94,7 @@ class ProductServiceTest {
         final String createdAt = "2020-04-29T12:50:08+00:00";
         final String modifiedAt = "2020-05-29T12:50:08+00:00";
         final String parentId = "3b30c4aa-0d5a-47de-aaac-1eb4c49f626c";
-        final UUID childProductId = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        final String childProductId = "d56b4377-e906-4c63-955c-70dbb1d919b2";
 
         final ProductEntity expectedParentProduct = new ProductEntity(
                 UUID.fromString(parentId),
@@ -101,7 +108,7 @@ class ProductServiceTest {
         when(productDao.selectById(UUID.fromString(parentId))).thenReturn(Optional.of(expectedParentProduct));
 
         productService.update(childProductId, productRequest);
-        verify(productDao, times(1)).updateById(eq(childProductId), productEntityArgumentCaptor.capture());
+        verify(productDao, times(1)).updateById(eq(UUID.fromString(childProductId)), productEntityArgumentCaptor.capture());
 
         final ProductEntity actualParentProduct = productEntityArgumentCaptor.getValue().getParent();
         assertThat(actualParentProduct).isEqualTo(expectedParentProduct);
@@ -110,7 +117,7 @@ class ProductServiceTest {
     @Test
     public void updateShouldThrowProductNotFoundExceptionIfParentDoesNotExist() {
         final String parentId = "3b30c4aa-0d5a-47de-aaac-1eb4c49f626c";
-        final UUID childProductId = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        final String childProductId = "d56b4377-e906-4c63-955c-70dbb1d919b2";
 
         final ProductRequest productRequest = new ProductRequest("Test upd", Maps.newLinkedHashMap(), parentId);
         when(productDao.selectById(UUID.fromString(parentId))).thenReturn(Optional.empty());
@@ -123,7 +130,7 @@ class ProductServiceTest {
     @Test
     public void updateShouldThrowInvalidIdExceptionIfParentIdIsInvalid() {
         final String parentId = "invalid-id";
-        final UUID childProductId = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
+        final String childProductId = "d56b4377-e906-4c63-955c-70dbb1d919b2";
 
         final ProductRequest productRequest = new ProductRequest("Test upd", Maps.newLinkedHashMap(), parentId);
 

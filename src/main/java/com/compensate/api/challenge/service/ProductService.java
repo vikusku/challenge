@@ -43,21 +43,32 @@ public class ProductService {
         return productDao.insert(entity);
     }
 
-    public Optional<ProductEntity> update(final UUID id, final ProductRequest productRequest) {
-        final ProductEntity entity = new ProductEntity();
-        entity.setName(productRequest.getName());
-        entity.setProperties(productRequest.getProperties());
+    public Optional<ProductEntity> update(final String id, final ProductRequest productRequest) {
+        try {
+            final UUID uuid = UUID.fromString(id);
 
-        if (!Strings.isNullOrEmpty(productRequest.getParentId())) {
-            entity.setParent(findParent(productRequest.getParentId()));
+            final ProductEntity entity = new ProductEntity();
+            entity.setName(productRequest.getName());
+            entity.setProperties(productRequest.getProperties());
+
+            if (!Strings.isNullOrEmpty(productRequest.getParentId())) {
+                entity.setParent(findParent(productRequest.getParentId()));
+            }
+
+            return productDao.updateById(uuid, entity);
+        } catch (final IllegalArgumentException ex) {
+            throw new InvalidIdException(String.format("%s is not valid", id));
         }
-
-        return productDao.updateById(id, entity);
     }
 
-    public Optional<ProductEntity> get(final UUID id) {
+    public Optional<ProductEntity> get(final String id) {
+        try {
+            final UUID uuid = UUID.fromString(id);
+            return productDao.selectById(uuid);
+        } catch (final IllegalArgumentException ex) {
+            throw new InvalidIdException(String.format("%s is not valid", id));
+        }
 
-        return productDao.selectById(id);
     }
 
     private ProductEntity findParent(final String parentId) {

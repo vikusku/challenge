@@ -130,14 +130,10 @@ public class ProductController {
             @Valid @NotNull @RequestBody
             final ProductRequest productRequest) {
 
-        try {
-            final UUID uuid = UUID.fromString(id);
-            return productService.update(uuid, productRequest)
-                    .map(entity -> ResponseEntity.ok(productAssembler.toModel(entity)))
-                    .orElseThrow(() -> new ProductNotFoundException(String.format("product with id [%s] does not exist", id)));
-        } catch (final IllegalArgumentException ex) {
-            throw new InvalidIdException(String.format("%s is not valid", id));
-        }
+        return productService.update(id, productRequest)
+                .map(entity -> ResponseEntity.ok(productAssembler.toModel(entity)))
+                .orElseThrow(() -> new ProductNotFoundException(String.format("product with id [%s] does not exist", id)));
+
     }
 
     @Operation(summary = "Get a product by its id. " +
@@ -165,15 +161,9 @@ public class ProductController {
     public ResponseEntity<Product> get(
             @Parameter(description = "UUID id of product to be searched")
             @PathVariable final String id) {
-        try {
-            final UUID uuid = UUID.fromString(id);
-
-            return productService.get(uuid)
-                    .map(entity -> ResponseEntity.ok(productAssembler.toModel(entity)))
-                    .orElseThrow(() ->
-                            new ProductNotFoundException(String.format("product with id [%s] does not exist", id)));
-        } catch (final IllegalArgumentException ex) {
-            throw new InvalidIdException(String.format("%s is not valid", id));
-        }
+        return productService.get(id)
+                .map(entity -> ResponseEntity.ok(productAssembler.toModel(entity)))
+                .orElseThrow(() ->
+                        new ProductNotFoundException(String.format("product with id [%s] does not exist", id)));
     }
 }

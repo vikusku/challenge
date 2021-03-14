@@ -96,7 +96,7 @@ class ProductControllerTest {
         );
         product.add(Link.of("http://localhost/api/v1/products/" + parentId, IanaLinkRelations.UP));
 
-        when(productService.get(UUID.fromString(id))).thenReturn(Optional.of(entity));
+        when(productService.get(id)).thenReturn(Optional.of(entity));
         when(productAssembler.toModel(entity)).thenReturn(product);
 
         this.mockMvc
@@ -110,22 +110,12 @@ class ProductControllerTest {
     @Test
     public void getShouldReturn404IfProductDoesNotExist() throws Exception {
         final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
-        when(productService.get(UUID.fromString(id))).thenReturn(Optional.empty());
+        when(productService.get(id)).thenReturn(Optional.empty());
 
         this.mockMvc
                 .perform(get("/api/v1/products/" + id).accept(MediaTypes.HAL_JSON_VALUE))
                 .andDo(print())
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void getShouldReturn400IfIdIsInvalid() throws Exception {
-        final String id = "invalid-uuid";
-
-        this.mockMvc
-                .perform(get("/api/v1/products/" + id).accept(MediaTypes.HAL_JSON_VALUE))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -152,7 +142,7 @@ class ProductControllerTest {
         );
         product.add(Link.of("http://localhost/api/v1/products/" + id, IanaLinkRelations.UP));
 
-        when(productService.get(UUID.fromString(id))).thenReturn(Optional.of(entity));
+        when(productService.get(id)).thenReturn(Optional.of(entity));
         when(productAssembler.toModel(entity)).thenReturn(product);
 
         this.mockMvc
@@ -280,7 +270,7 @@ class ProductControllerTest {
                 OffsetDateTime.parse(modifiedAt),
                 null
         );
-        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenReturn(Optional.of(productEntity));
+        when(productService.update(eq(id), any(ProductRequest.class))).thenReturn(Optional.of(productEntity));
 
         final Product product = new Product(
                 productEntity.getId(),
@@ -306,7 +296,7 @@ class ProductControllerTest {
     @Test
     public void updateShouldReturn404IfProductDoesNotExist() throws Exception {
         final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
-        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenReturn(Optional.empty());
+        when(productService.update(eq(id), any(ProductRequest.class))).thenReturn(Optional.empty());
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
@@ -321,7 +311,7 @@ class ProductControllerTest {
     @Test
     public void updateShouldReturn404IfProductNotFoundExceptionThrown() throws Exception {
         final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
-        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenThrow(ProductNotFoundException.class);
+        when(productService.update(eq(id), any(ProductRequest.class))).thenThrow(ProductNotFoundException.class);
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
@@ -335,7 +325,7 @@ class ProductControllerTest {
     @Test
     public void updateShouldReturn400IfInvalidIdExceptionThrown() throws Exception {
         final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
-        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenThrow(InvalidIdException.class);
+        when(productService.update(eq(id), any(ProductRequest.class))).thenThrow(InvalidIdException.class);
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
@@ -349,7 +339,7 @@ class ProductControllerTest {
     @Test
     public void updateProductExceptionTransformedIntoInternalServerError() throws Exception{
         final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
-        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenThrow(UpdateProductException.class);
+        when(productService.update(eq(id), any(ProductRequest.class))).thenThrow(UpdateProductException.class);
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
