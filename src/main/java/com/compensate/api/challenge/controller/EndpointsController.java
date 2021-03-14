@@ -2,6 +2,7 @@ package com.compensate.api.challenge.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class EndpointsController {
                 .getHandlerMethods()
                 .keySet()
                 .stream()
-                .filter(m -> m.getPatternsCondition() != null)
+                .filter(m -> !Strings.isNullOrEmpty(m.getName()) && m.getPatternsCondition() != null)
                 .map(m -> {
                     final String endpoint = String.format("%s://%s:%d%s%s", req.getScheme(),
                             req.getServerName(), req.getServerPort(), req.getContextPath(), m.getPatternsCondition().getPatterns().toArray()[0]);
