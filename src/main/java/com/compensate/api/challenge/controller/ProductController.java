@@ -31,6 +31,7 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.UUID;
 
+// TODO code clean up. Parse parentID to UUID here.
 @RestController
 @RequestMapping(path = "/api/v1/products", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 public class ProductController {

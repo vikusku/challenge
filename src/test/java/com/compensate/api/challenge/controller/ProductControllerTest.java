@@ -129,6 +129,41 @@ class ProductControllerTest {
     }
 
     @Test
+    public void getShouldSupportHeadRequest() throws Exception {
+        final String id = "257a3e82-59c9-47c9-880a-74a1bbef8a07";
+        final String createdAt = "2020-04-29T12:50:08+00:00";
+        final String modifiedAt = "2020-05-29T12:50:08+00:00";
+
+        final ProductEntity entity = new ProductEntity(
+                UUID.fromString(id),
+                "Test Product",
+                Maps.newLinkedHashMap(),
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
+                null);
+
+        final Product product = new Product(
+                entity.getId(),
+                entity.getName(),
+                entity.getProperties(),
+                entity.getCreatedAt(),
+                entity.getModifiedAt(),
+                Link.of("http://localhost/api/v1/products/" + id)
+        );
+        product.add(Link.of("http://localhost/api/v1/products/" + id, IanaLinkRelations.UP));
+
+        when(productService.get(UUID.fromString(id))).thenReturn(Optional.of(entity));
+        when(productAssembler.toModel(entity)).thenReturn(product);
+
+        this.mockMvc
+                .perform(head("/api/v1/products/" + id).accept(MediaTypes.HAL_JSON_VALUE))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "application/hal+json"))
+                .andExpect(header().string("Content-Length", "369"));
+    }
+
+    @Test
     public void getAllShouldReturnCorrectRequestedPage() throws Exception {
         Pageable pageRequest = PageRequest.of(2, 4);
         Map<ProductEntity, Product> productsMap = getAllRequestMockedProducts();
@@ -150,6 +185,30 @@ class ProductControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(content().json(readFromFile("getAllProductResponse.json")));
+    }
+
+    @Test
+    public void getAllShouldSupportHeadRequest() throws Exception {
+        Pageable pageRequest = PageRequest.of(2, 4);
+        Map<ProductEntity, Product> productsMap = getAllRequestMockedProducts();
+        List<ProductEntity> productEntities = Lists.newArrayList(productsMap.keySet());
+        final ProductEntity pe1 = productEntities.get(0);
+        final ProductEntity pe2 = productEntities.get(1);
+        final ProductEntity pe3 = productEntities.get(2);
+        final ProductEntity pe4 = productEntities.get(3);
+
+        when(productService.getAll(any(Pageable.class))).thenReturn(new PageImpl<>(productEntities, pageRequest, 20));
+        when(productAssembler.toModel(pe1)).thenReturn(productsMap.get(pe1));
+        when(productAssembler.toModel(pe2)).thenReturn(productsMap.get(pe2));
+        when(productAssembler.toModel(pe3)).thenReturn(productsMap.get(pe3));
+        when(productAssembler.toModel(pe4)).thenReturn(productsMap.get(pe4));
+
+        this.mockMvc
+                .perform(head("/api/v1/products?page=2&size=4").accept(MediaTypes.HAL_JSON_VALUE))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "application/hal+json"))
+                .andExpect(header().string("Content-Length", "2043"));
     }
 
     @Test
