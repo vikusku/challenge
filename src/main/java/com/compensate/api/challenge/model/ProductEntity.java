@@ -19,4 +19,5 @@ public class ProductEntity {
     private Map<String, Object> properties;
     private OffsetDateTime createdAt;
     private OffsetDateTime modifiedAt;
+    private ProductEntity parent;
 }

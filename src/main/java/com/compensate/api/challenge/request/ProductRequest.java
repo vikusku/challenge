@@ -14,4 +14,5 @@ public class ProductRequest {
     @NotEmpty(message = "name cannot be null or empty")
     private String name;
     private Map<String, Object> properties;
+    private String parentId;
 }

@@ -1,6 +1,8 @@
 package com.compensate.api.challenge.controller;
 
 import com.compensate.api.challenge.assembler.ProductAssembler;
+import com.compensate.api.challenge.exception.InvalidIdException;
+import com.compensate.api.challenge.exception.ProductNotFoundException;
 import com.compensate.api.challenge.exception.UpdateProductException;
 import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.request.ProductRequest;
@@ -16,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
@@ -50,6 +53,7 @@ class ProductControllerTest {
     @Test
     public void getShouldReturnProductResourceForExistingProduct() throws Exception {
         final String id = "257a3e82-59c9-47c9-880a-74a1bbef8a07";
+        final String parentId = "5657fedc-a40e-4908-9345-305e6fe76fbd";
         final String createdAt = "2020-04-29T12:50:08+00:00";
         final String modifiedAt = "2020-05-29T12:50:08+00:00";
 
@@ -72,7 +76,15 @@ class ProductControllerTest {
                 "Test Product",
                 properties,
                 OffsetDateTime.parse(createdAt),
-                OffsetDateTime.parse(modifiedAt)
+                OffsetDateTime.parse(modifiedAt),
+                new ProductEntity(
+                        UUID.fromString(parentId),
+                        "Parent Test Product",
+                        Maps.newLinkedHashMap(),
+                        OffsetDateTime.parse(createdAt),
+                        OffsetDateTime.parse(modifiedAt),
+                        null
+                )
         );
         final Product product = new Product(
                 entity.getId(),
@@ -80,8 +92,9 @@ class ProductControllerTest {
                 entity.getProperties(),
                 entity.getCreatedAt(),
                 entity.getModifiedAt(),
-                Link.of("http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07")
+                Link.of("http://localhost/api/v1/products/" + id)
         );
+        product.add(Link.of("http://localhost/api/v1/products/" + parentId, IanaLinkRelations.UP));
 
         when(productService.get(UUID.fromString(id))).thenReturn(Optional.of(entity));
         when(productAssembler.toModel(entity)).thenReturn(product);
@@ -154,7 +167,8 @@ class ProductControllerTest {
                 "TestProduct",
                 properties,
                 OffsetDateTime.parse(createdAt),
-                OffsetDateTime.parse(createdAt)
+                OffsetDateTime.parse(createdAt),
+                null
         );
         when(productService.create(any(ProductRequest.class))).thenReturn(productEntity);
 
@@ -171,7 +185,7 @@ class ProductControllerTest {
 
         this.mockMvc
                 .perform(post("/api/v1/products")
-                        .content(asJsonString(new ProductRequest("TestProduct", properties)))
+                        .content(asJsonString(new ProductRequest("TestProduct", properties, null)))
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -187,7 +201,7 @@ class ProductControllerTest {
                 .perform(post("/api/v1/products")
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new ProductRequest(null, null))))
+                        .content(asJsonString(new ProductRequest(null, null, null))))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("name cannot be null or empty")));
@@ -204,7 +218,8 @@ class ProductControllerTest {
                 "TestProduct renamed",
                 Maps.newLinkedHashMap(),
                 OffsetDateTime.parse(createdAt),
-                OffsetDateTime.parse(modifiedAt)
+                OffsetDateTime.parse(modifiedAt),
+                null
         );
         when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenReturn(Optional.of(productEntity));
 
@@ -221,7 +236,7 @@ class ProductControllerTest {
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
-                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap())))
+                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap(), null)))
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -236,11 +251,40 @@ class ProductControllerTest {
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
-                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap())))
+                        .content(asJsonString(new ProductRequest(
+                                "TestProduct renamed", Maps.newLinkedHashMap(), "5657fedc-a40e-4908-9345-305e6fe76fbd")))
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void updateShouldReturn404IfProductNotFoundExceptionThrown() throws Exception {
+        final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
+        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenThrow(ProductNotFoundException.class);
+
+        this.mockMvc
+                .perform(put("/api/v1/products/" + id)
+                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap(), "invalid-id")))
+                        .accept(MediaTypes.HAL_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void updateShouldReturn400IfInvalidIdExceptionThrown() throws Exception {
+        final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
+        when(productService.update(eq(UUID.fromString(id)), any(ProductRequest.class))).thenThrow(InvalidIdException.class);
+
+        this.mockMvc
+                .perform(put("/api/v1/products/" + id)
+                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap(), "invalid-id")))
+                        .accept(MediaTypes.HAL_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -250,7 +294,7 @@ class ProductControllerTest {
 
         this.mockMvc
                 .perform(put("/api/v1/products/" + id)
-                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap())))
+                        .content(asJsonString(new ProductRequest("TestProduct renamed", Maps.newLinkedHashMap(), null)))
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -272,6 +316,7 @@ class ProductControllerTest {
     }
 
     private Map<ProductEntity, Product> getAllRequestMockedProducts() {
+        // Create properties for parent product
         final String createdAt = "2020-04-29T12:50:08+00:00";
         final String modifiedAt = "2020-05-29T12:50:08+00:00";
 
@@ -291,20 +336,34 @@ class ProductControllerTest {
         properties1.put("prop5", Arrays.asList("one", "two", "three"));
         properties1.put("prop6", supPropertiesMap);
 
-        products.put(
-            new ProductEntity(
-                UUID.fromString("257a3e82-59c9-47c9-880a-74a1bbef8a07"),
-                "TestProduct1",
-                properties1,
-                OffsetDateTime.parse(createdAt),
-                OffsetDateTime.parse(modifiedAt)),
-            new Product(
-                UUID.fromString("257a3e82-59c9-47c9-880a-74a1bbef8a07"),
+        // Create parent product mapping
+        final String parentId = "257a3e82-59c9-47c9-880a-74a1bbef8a07";
+        final Product parentProduct = new Product(
+                UUID.fromString(parentId),
                 "TestProduct1",
                 properties1,
                 OffsetDateTime.parse(createdAt),
                 OffsetDateTime.parse(modifiedAt),
-                Link.of("http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07")));
+                Link.of("http://localhost/api/v1/products/" + parentId));
+
+        products.put(
+            new ProductEntity(
+                UUID.fromString(parentId),
+                "TestProduct1",
+                properties1,
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
+                null), parentProduct);
+
+        // Create first child product mapping
+        final Product p1 = new Product(
+                UUID.fromString("3877ed4b-e2cb-4097-8c58-a8001c44096a"),
+                "TestProduct2",
+                Maps.newLinkedHashMap(),
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
+                Link.of("http://localhost/api/v1/products/3877ed4b-e2cb-4097-8c58-a8001c44096a"));
+        p1.add(Link.of("http://localhost/api/v1/products/" + parentId, IanaLinkRelations.UP));
 
         products.put(
             new ProductEntity(
@@ -312,15 +371,18 @@ class ProductControllerTest {
                 "TestProduct2",
                 Maps.newLinkedHashMap(),
                 OffsetDateTime.parse(createdAt),
-                OffsetDateTime.parse(modifiedAt)
-            ),
-            new Product(
-                UUID.fromString("3877ed4b-e2cb-4097-8c58-a8001c44096a"),
-                "TestProduct2",
+                OffsetDateTime.parse(modifiedAt),
+                null), p1);
+
+        // Create second child product mapping
+        final Product p2 = new Product(
+                UUID.fromString("7a23ac61-178d-4f28-9b63-d977c629176d"),
+                "TestProduct3",
                 Maps.newLinkedHashMap(),
                 OffsetDateTime.parse(createdAt),
                 OffsetDateTime.parse(modifiedAt),
-                Link.of("http://localhost/api/v1/products/3877ed4b-e2cb-4097-8c58-a8001c44096a")));
+                Link.of("http://localhost/api/v1/products/7a23ac61-178d-4f28-9b63-d977c629176d"));
+        p2.add(Link.of("http://localhost/api/v1/products/" + parentId, IanaLinkRelations.UP));
 
         products.put(
             new ProductEntity(
@@ -328,21 +390,24 @@ class ProductControllerTest {
                 "TestProduct3",
                 Maps.newLinkedHashMap(),
                 OffsetDateTime.parse(createdAt),
-                OffsetDateTime.parse(modifiedAt)
-            ),
-            new Product(
-                UUID.fromString("7a23ac61-178d-4f28-9b63-d977c629176d"),
-                "TestProduct3",
-                Maps.newLinkedHashMap(),
-                OffsetDateTime.parse(createdAt),
                 OffsetDateTime.parse(modifiedAt),
-                Link.of("http://localhost/api/v1/products/7a23ac61-178d-4f28-9b63-d977c629176d")));
+                null), p2);
 
+        // Create properties for third product
         final Map<String, Object> properties4 = new LinkedHashMap<>();
         final Map<String, String> subProperties4 = new LinkedHashMap<>();
         subProperties4.put("hello", "world");
-
         properties4.put("prop1", subProperties4);
+
+        // Create third child product mapping
+        final Product p3 = new Product(
+                UUID.fromString("60ed9741-3c8a-4b9a-adf9-3c821ca2393a"),
+                "TestProduct4",
+                properties4,
+                OffsetDateTime.parse(createdAt),
+                OffsetDateTime.parse(modifiedAt),
+                Link.of("http://localhost/api/v1/products/60ed9741-3c8a-4b9a-adf9-3c821ca2393a"));
+        p3.add(Link.of("http://localhost/api/v1/products/" + parentId, IanaLinkRelations.UP));
 
         products.put(
             new ProductEntity(
@@ -350,15 +415,8 @@ class ProductControllerTest {
                 "TestProduct4",
                 properties4,
                 OffsetDateTime.parse(createdAt),
-                OffsetDateTime.parse(modifiedAt)
-            ),
-            new Product(
-                UUID.fromString("60ed9741-3c8a-4b9a-adf9-3c821ca2393a"),
-                "TestProduct4",
-                properties4,
-                OffsetDateTime.parse(createdAt),
                 OffsetDateTime.parse(modifiedAt),
-                Link.of("http://localhost/api/v1/products/60ed9741-3c8a-4b9a-adf9-3c821ca2393a")));
+                null), p3);
 
         return products;
     }

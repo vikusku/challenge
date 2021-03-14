@@ -33,6 +33,9 @@ public class ExampleSchema {
             "  \"_links\":{\n" +
             "    \"self\":{\n" +
             "      \"href\":\"http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07\"\n" +
+            "    },\n" +
+            "    \"up\": {\n" +
+            "      \"href\":\"http://localhost/api/v1/products/5657fedc-a40e-4908-9345-305e6fe76fbd\"\n" +
             "    }\n" +
             "  }\n" +
             "}";

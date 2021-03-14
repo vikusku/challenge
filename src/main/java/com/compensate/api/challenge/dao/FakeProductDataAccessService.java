@@ -25,7 +25,9 @@ public class FakeProductDataAccessService implements ProductDao {
                 product.getName(),
                 product.getProperties(),
                 OffsetDateTime.now(),
-                OffsetDateTime.now());
+                OffsetDateTime.now(),
+                product.getParent());
+
 
         DB.add(saved);
         return saved;
@@ -61,7 +63,8 @@ public class FakeProductDataAccessService implements ProductDao {
                         updatedProduct.getName(),
                         updatedProduct.getProperties(),
                         product.getCreatedAt(),
-                        OffsetDateTime.now());
+                        OffsetDateTime.now(),
+                        product.getParent());
                 DB.set(indexOfProduct, saved);
 
                 return Optional.of(saved);

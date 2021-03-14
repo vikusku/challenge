@@ -46,6 +46,9 @@
         "_links":{
           "self":{
             "href":"http://localhost/api/v1/products/3877ed4b-e2cb-4097-8c58-a8001c44096a"
+          },
+          "up": {
+            "href":"http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07"
           }
         }
       },
@@ -61,6 +64,9 @@
         "_links":{
           "self":{
             "href":"http://localhost/api/v1/products/7a23ac61-178d-4f28-9b63-d977c629176d"
+          },
+          "up": {
+            "href":"http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07"
           }
         }
       },
@@ -78,6 +84,9 @@
         "_links":{
           "self":{
             "href":"http://localhost/api/v1/products/60ed9741-3c8a-4b9a-adf9-3c821ca2393a"
+          },
+          "up": {
+            "href":"http://localhost/api/v1/products/257a3e82-59c9-47c9-880a-74a1bbef8a07"
           }
         }
       }

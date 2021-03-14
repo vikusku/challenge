@@ -44,7 +44,8 @@ public class ProductController {
     @Autowired
     private PagedResourcesAssembler<ProductEntity> pagedResourcesAssembler;
 
-    @Operation(summary = "Get all products")
+    @Operation(summary = "Get all products. " +
+            "If product is a child, _links property will contain an \"up\" link pointing to its parent")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -75,7 +76,7 @@ public class ProductController {
                             examples = { @ExampleObject (value = ExampleSchema.PRODUCT)})}),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid request body",
+                    description = "Invalid request body or parentId if it's not null or empty",
                     content = @Content),
             @ApiResponse(
                     responseCode = "500",
@@ -138,7 +139,8 @@ public class ProductController {
         }
     }
 
-    @Operation(summary = "Get a product by its id")
+    @Operation(summary = "Get a product by its id. " +
+            "If product is a child, _links property will contain an \"up\" link pointing to its parent")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
