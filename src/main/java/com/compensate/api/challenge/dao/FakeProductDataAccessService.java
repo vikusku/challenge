@@ -64,7 +64,7 @@ public class FakeProductDataAccessService implements ProductDao {
             updatedProduct.getProperties(),
             product.getCreatedAt(),
             OffsetDateTime.now(),
-            product.getParent());
+            updatedProduct.getParent());
         DB.set(indexOfProduct, saved);
 
         return Optional.of(saved);

@@ -3,6 +3,7 @@ package com.compensate.api.challenge.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -84,16 +85,30 @@ class ProductServiceTest {
 
   @Test
   public void updateSavesUpdatedProductEntity() {
-    final ProductRequest productRequest = new ProductRequest("Test upd", Maps.newLinkedHashMap(),
+    final ProductRequest productRequest = new ProductRequest("Product upd", Maps.newLinkedHashMap(),
         null);
-    final String id = "d56b4377-e906-4c63-955c-70dbb1d919b2";
+    final String createdAt = "2020-04-29T12:50:08+00:00";
+    final String modifiedAt = "2020-05-29T12:50:08+00:00";
+    final UUID id = UUID.fromString("d56b4377-e906-4c63-955c-70dbb1d919b2");
 
-    productService.update(id, productRequest);
+    final ProductEntity currentProductEntity = new ProductEntity(
+        id,
+        "Product",
+        Maps.newLinkedHashMap(),
+        OffsetDateTime.parse(createdAt),
+        OffsetDateTime.parse(modifiedAt),
+        null
+    );
+
+    when(productDao.selectById(id)).thenReturn(Optional.of(currentProductEntity));
+
+    productService.update(id.toString(), productRequest);
+
     verify(productDao, times(1))
-        .updateById(eq(UUID.fromString(id)), productEntityArgumentCaptor.capture());
+        .updateById(eq(id), productEntityArgumentCaptor.capture());
 
     final ProductEntity actualProductEntity = productEntityArgumentCaptor.getValue();
-    assertThat(actualProductEntity.getName()).isEqualTo("Test upd");
+    assertThat(actualProductEntity.getName()).isEqualTo("Product upd");
     assertThat(actualProductEntity.getProperties()).isEqualTo(Maps.newLinkedHashMap());
     assertThat(actualProductEntity.getParent()).isNull();
   }
@@ -105,6 +120,7 @@ class ProductServiceTest {
     final String parentId = "3b30c4aa-0d5a-47de-aaac-1eb4c49f626c";
     final String childProductId = "d56b4377-e906-4c63-955c-70dbb1d919b2";
 
+    final ProductEntity childProduct = mock(ProductEntity.class);
     final ProductEntity expectedParentProduct = new ProductEntity(
         UUID.fromString(parentId),
         "Parent product",
@@ -113,17 +129,28 @@ class ProductServiceTest {
         OffsetDateTime.parse(modifiedAt),
         null);
 
-    final ProductRequest productRequest = new ProductRequest("Test upd", Maps.newLinkedHashMap(),
-        parentId);
-    when(productDao.selectById(UUID.fromString(parentId)))
-        .thenReturn(Optional.of(expectedParentProduct));
+    when(productDao.selectById(UUID.fromString(parentId))).thenReturn(Optional.of(expectedParentProduct));
+    when(productDao.selectById(UUID.fromString(childProductId))).thenReturn(Optional.of(childProduct));
 
-    productService.update(childProductId, productRequest);
+    productService.update(childProductId, new ProductRequest("Test upd", Maps.newLinkedHashMap(),
+        parentId));
+
     verify(productDao, times(1))
         .updateById(eq(UUID.fromString(childProductId)), productEntityArgumentCaptor.capture());
 
-    final ProductEntity actualParentProduct = productEntityArgumentCaptor.getValue().getParent();
-    assertThat(actualParentProduct).isEqualTo(expectedParentProduct);
+    assertThat(productEntityArgumentCaptor.getValue().getParent()).isEqualTo(expectedParentProduct);
+  }
+
+  @Test
+  public void updateReturnsEmptyOptionalIfProductDoesNotExist() {
+    final String productId = "3b30c4aa-0d5a-47de-aaac-1eb4c49f626c";
+
+    when(productDao.selectById(UUID.fromString(productId))).thenReturn(Optional.empty());
+
+    final Optional<ProductEntity> actual =
+        productService.update(productId, new ProductRequest("Test upd", Maps.newLinkedHashMap(),null));
+
+    assertThat(actual).isEmpty();
   }
 
   @Test
@@ -131,12 +158,13 @@ class ProductServiceTest {
     final String parentId = "3b30c4aa-0d5a-47de-aaac-1eb4c49f626c";
     final String childProductId = "d56b4377-e906-4c63-955c-70dbb1d919b2";
 
-    final ProductRequest productRequest = new ProductRequest("Test upd", Maps.newLinkedHashMap(),
-        parentId);
+    final ProductEntity childProduct = mock(ProductEntity.class);
+    when(productDao.selectById(UUID.fromString(childProductId))).thenReturn(Optional.of(childProduct));
     when(productDao.selectById(UUID.fromString(parentId))).thenReturn(Optional.empty());
 
     assertThrows(ProductNotFoundException.class, () -> {
-      productService.update(childProductId, productRequest);
+      productService.update(childProductId, new ProductRequest("Test upd", Maps.newLinkedHashMap(),
+          parentId));
     });
   }
 
@@ -145,11 +173,12 @@ class ProductServiceTest {
     final String parentId = "invalid-id";
     final String childProductId = "d56b4377-e906-4c63-955c-70dbb1d919b2";
 
-    final ProductRequest productRequest = new ProductRequest("Test upd", Maps.newLinkedHashMap(),
-        parentId);
+    final ProductEntity childProduct = mock(ProductEntity.class);
+    when(productDao.selectById(UUID.fromString(childProductId))).thenReturn(Optional.of(childProduct));
 
     assertThrows(InvalidIdException.class, () -> {
-      productService.update(childProductId, productRequest);
+      productService.update(childProductId, new ProductRequest("Test upd", Maps.newLinkedHashMap(),
+          parentId));
     });
   }
 

@@ -52,15 +52,19 @@ public class ProductService implements Tree<ProductEntity> {
     try {
       final UUID uuid = UUID.fromString(id);
 
-      final ProductEntity entity = new ProductEntity();
-      entity.setName(productRequest.getName());
-      entity.setProperties(productRequest.getProperties());
-
-      if (!Strings.isNullOrEmpty(productRequest.getParentId())) {
-        entity.setParent(findParent(productRequest.getParentId()));
+      if (!productDao.selectById(uuid).isPresent()) {
+        return Optional.empty();
       }
 
-      return productDao.updateById(uuid, entity);
+      final ProductEntity updated = new ProductEntity();
+      updated.setName(productRequest.getName());
+      updated.setProperties(productRequest.getProperties());
+
+      if (!Strings.isNullOrEmpty(productRequest.getParentId())) {
+        updated.setParent(findParent(productRequest.getParentId()));
+      }
+
+      return productDao.updateById(uuid, updated);
     } catch (final IllegalArgumentException ex) {
       throw new InvalidIdException(String.format("%s is not valid", id));
     }
