@@ -1,7 +1,6 @@
 package com.compensate.api.challenge.controller;
 
 import com.compensate.api.challenge.assembler.ProductAssembler;
-import com.compensate.api.challenge.exception.InvalidIdException;
 import com.compensate.api.challenge.exception.ProductNotFoundException;
 import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.request.ProductRequest;
@@ -29,9 +28,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.UUID;
 
-// TODO code clean up. Parse parentID to UUID here.
 @RestController
 @RequestMapping(path = "/api/v1/products", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 public class ProductController {
@@ -46,7 +43,9 @@ public class ProductController {
     private PagedResourcesAssembler<ProductEntity> pagedResourcesAssembler;
 
     @Operation(summary = "Get all products. " +
-            "If product is a child, _links property will contain an \"up\" link pointing to its parent")
+            "If product has a parent, _links property will contain a \"parent\" link pointing to its parent " +
+            "and a \"root\" link pointing to the root of the tree. " +
+            "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -110,7 +109,7 @@ public class ProductController {
                             examples = { @ExampleObject (value = ExampleSchema.PRODUCT)})}),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid request body or invalid id supplied",
+                    description = "Invalid request body or invalid id(s) supplied",
                     content = @Content),
             @ApiResponse(
                     responseCode = "404",
@@ -137,7 +136,9 @@ public class ProductController {
     }
 
     @Operation(summary = "Get a product by its id. " +
-            "If product is a child, _links property will contain an \"up\" link pointing to its parent")
+            "If product has a parent, _links property will contain a \"parent\" link pointing to its parent " +
+            "and a \"root\" link pointing to the root of the tree. " +
+            "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -165,5 +166,40 @@ public class ProductController {
                 .map(entity -> ResponseEntity.ok(productAssembler.toModel(entity)))
                 .orElseThrow(() ->
                         new ProductNotFoundException(String.format("product with id [%s] does not exist", id)));
+    }
+
+    @Operation(summary = "Get all children for product. " +
+            "_links property will contain a \"parent\" link pointing to its parent " +
+            "and a \"root\" link pointing to the root of the tree. " +
+            "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Found parent product",
+                    content = { @Content(
+                            schema = @Schema(implementation = PagedModel.class),
+                            examples = { @ExampleObject (value = ExampleSchema.ALL_SUBPRODUCTS)})}),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Parent product not found",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)})
+    @GetMapping(path = "/{id}/subproducts", name = "get_sub_products_of_product")
+    public ResponseEntity<PagedModel<Product>> getAllSubProducts(
+            @Parameter(description = "UUID id of parent product to be searched")
+            @PathVariable final String id,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+
+        return ResponseEntity.ok(
+                pagedResourcesAssembler.toModel(
+                        productService.getAllSubProducts(id, PageRequest.of(page, size)), productAssembler));
     }
 }

@@ -13,7 +13,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductEntity {
+public class ProductEntity implements Node {
     private UUID id;
     private String name;
     private Map<String, Object> properties;

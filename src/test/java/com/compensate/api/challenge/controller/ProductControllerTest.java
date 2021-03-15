@@ -350,6 +350,44 @@ class ProductControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    public void getAllSubProductsShouldReturnPagedSubproducts() throws Exception {
+        final String parentId = "be8835b9-62ae-406f-be54-cd68f08dd1a4";
+        Pageable pageRequest = PageRequest.of(0, 5);
+
+        final ProductEntity parent = new ProductEntity();
+        parent.setId(UUID.fromString(parentId));
+
+        final ProductEntity childEntity = new ProductEntity
+                (UUID.fromString("a54e56fb-2cc9-4eb7-b952-c16802e8debc"),
+                "Child 1",
+                Maps.newLinkedHashMap(),
+                OffsetDateTime.parse("2021-03-14T23:02:43+02:00"),
+                OffsetDateTime.parse("2021-03-14T23:02:43+02:00"),
+                parent);
+        final Product child = new Product(
+                childEntity.getId(),
+                childEntity.getName(),
+                childEntity.getProperties(),
+                childEntity.getCreatedAt(),
+                childEntity.getModifiedAt(),
+                Link.of("http://localhost/api/v1/products/a54e56fb-2cc9-4eb7-b952-c16802e8debc")
+        );
+        child.add(Link.of("http://localhost/api/v1/products/be8835b9-62ae-406f-be54-cd68f08dd1a4", "parent"),
+                Link.of("http://localhost/api/v1/products/be8835b9-62ae-406f-be54-cd68f08dd1a4", "root"));
+
+        when(productService.getAllSubProducts(eq(parentId), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Lists.newArrayList(childEntity), pageRequest, 1));
+        when(productAssembler.toModel(childEntity)).thenReturn(child);
+
+        this.mockMvc
+                .perform(get("/api/v1/products/" + parentId + "/subproducts?page=0&size=5").accept(MediaTypes.HAL_JSON_VALUE))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
+                .andExpect(content().json(readFromFile("getSubProductsResponse.json")));
+    }
+
     private String readFromFile(String fileName) throws Exception {
         String absolutePath = Paths.get("src","test","resources", "expectedResponse").toFile().getAbsolutePath();
 

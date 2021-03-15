@@ -3,17 +3,26 @@ package com.compensate.api.challenge.assembler;
 import com.compensate.api.challenge.controller.ProductController;
 import com.compensate.api.challenge.model.ProductEntity;
 import com.compensate.api.challenge.resource.Product;
-import org.springframework.hateoas.IanaLinkRelations;
+import com.compensate.api.challenge.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 public class ProductAssembler extends RepresentationModelAssemblerSupport<ProductEntity, Product> {
 
-    public ProductAssembler() {
+    @Autowired
+    private ProductService productService;
+
+    public ProductAssembler(final ProductService productService) {
+
         super(ProductController.class, Product.class);
+        this.productService = productService;
     }
 
     @Override
@@ -28,7 +37,13 @@ public class ProductAssembler extends RepresentationModelAssemblerSupport<Produc
         );
 
         if (entity.getParent() != null) {
-            product.add(linkTo(ProductController.class).slash(entity.getParent().getId()).withRel(IanaLinkRelations.UP));
+            product.add(linkTo(ProductController.class).slash(entity.getParent().getId()).withRel("parent"));
+            product.add(linkTo(ProductController.class).slash(productService.getRoot(entity).getId()).withRel("root"));
+        }
+
+        final List<ProductEntity> subProducts = productService.getChildren(entity);
+        if (!subProducts.isEmpty()) {
+            product.add(linkTo(methodOn(ProductController.class).getAllSubProducts(entity.getId().toString(), 0, 10)).withRel("subProducts"));
         }
 
         return product;

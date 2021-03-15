@@ -2,8 +2,9 @@ package com.compensate.api.challenge.dao;
 
 import com.compensate.api.challenge.exception.UpdateProductException;
 import com.compensate.api.challenge.model.ProductEntity;
+import com.compensate.api.challenge.util.PaginatedResponseUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +16,9 @@ import java.util.UUID;
 
 @Repository("fakeDao")
 public class FakeProductDataAccessService implements ProductDao {
+
+    @Autowired
+    private PaginatedResponseUtil paginatedResponseUtil;
 
     private static List<ProductEntity> DB = new ArrayList<>();
 
@@ -35,14 +39,12 @@ public class FakeProductDataAccessService implements ProductDao {
 
     @Override
     public Page<ProductEntity> selectAll(Pageable pageable) {
-        if (DB.isEmpty()) {
-            return Page.empty();
-        }
+        return paginatedResponseUtil.getPage(DB, pageable);
+    }
 
-        final int start = Math.min((int)pageable.getOffset(), DB.size());
-        final int end = Math.min((start + pageable.getPageSize()), DB.size());
-
-        return new PageImpl<>(DB.subList(start, end), pageable, DB.size());
+    @Override
+    public List<ProductEntity> selectAll() {
+        return DB;
     }
 
     @Override

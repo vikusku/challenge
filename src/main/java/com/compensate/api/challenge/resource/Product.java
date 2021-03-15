@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Getter
-@JsonPropertyOrder({"_type", "id", "name", "properties", "created_at", "modified_at" })
+@JsonPropertyOrder({"_type", "id", "name", "properties", "created_at", "modified_at", "_links" })
 public class Product extends RepresentationModel<Product> {
     @JsonProperty("_type")
     private String type;
