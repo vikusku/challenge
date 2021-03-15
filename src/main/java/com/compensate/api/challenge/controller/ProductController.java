@@ -49,15 +49,15 @@ public class ProductController {
   @Autowired
   private PagedResourcesAssembler<ProductEntity> pagedResourcesAssembler;
 
-  @Operation(summary = "Get all products. " +
-      "If product has a parent, _links property will contain a \"parent\" link pointing to its parent "
-      +
-      "and a \"root\" link pointing to the root of the tree. " +
-      "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.")
+  @Operation(summary = "Get all products")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200",
-          description = "Found products",
+          description =
+              "Found products. If product has a parent, _links property will contain a \"parent\" link pointing to its parent "
+                  +
+                  "and a \"root\" link pointing to the root of the tree. " +
+                  "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.",
           content = {@Content(
               schema = @Schema(implementation = PagedModel.class),
               examples = {@ExampleObject(value = ExampleSchema.ALL_PRODUCTS)})}),
@@ -142,15 +142,15 @@ public class ProductController {
 
   }
 
-  @Operation(summary = "Get a product by its id. " +
-      "If product has a parent, _links property will contain a \"parent\" link pointing to its parent "
-      +
-      "and a \"root\" link pointing to the root of the tree. " +
-      "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.")
+  @Operation(summary = "Get a product by its id")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200",
-          description = "Found the product",
+          description =
+              "Found the product. If product has a parent, _links property will contain a \"parent\" link pointing to its parent "
+                  +
+                  "and a \"root\" link pointing to the root of the tree. " +
+                  "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.",
           content = {@Content(
               schema = @Schema(implementation = Product.class),
               examples = {@ExampleObject(value = ExampleSchema.PRODUCT)})}),
@@ -176,14 +176,15 @@ public class ProductController {
             new ProductNotFoundException(String.format("product with id [%s] does not exist", id)));
   }
 
-  @Operation(summary = "Get all children for product. " +
-      "_links property will contain a \"parent\" link pointing to its parent " +
-      "and a \"root\" link pointing to the root of the tree. " +
-      "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.")
+  @Operation(summary = "Get all children for product")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200",
-          description = "Found parent product",
+          description =
+              "Found parent product. For each child product _links property will contain a \"parent\" link pointing to its parent "
+                  +
+                  "and a \"root\" link pointing to the root of the tree. " +
+                  "If product has children _links property will contain a \"subProducts\" link pointing to its direct children.",
           content = {@Content(
               schema = @Schema(implementation = PagedModel.class),
               examples = {@ExampleObject(value = ExampleSchema.ALL_SUBPRODUCTS)})}),
