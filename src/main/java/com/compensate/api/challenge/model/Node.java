@@ -4,5 +4,5 @@ import java.io.Serializable;
 
 public interface Node extends Serializable {
 
-    Node getParent();
+  Node getParent();
 }
